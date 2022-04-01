@@ -1,0 +1,46 @@
+main: me.vislavy.testimony.Testimony
+name: Testimony
+description: Authorization plugin
+author: vislavy
+version: 1.0-SNAPSHOT
+api-version: 1.18
+
+commands:
+  register:
+    aliases: [ r, reg ]
+    usage: /reg <password>
+    description: Registering a new account.
+    permission: testimony.commands.register
+
+  login:
+    aliases: [ l ]
+    usage: /l <password>
+    description: Login.
+    permission: testimony.commands.login
+
+  changepassword:
+    usage: /changepassword <old password> <new password>
+    description: Change account password.
+    permission: testimony.commands.changepassword
+
+  deleteaccount:
+    usage: /deleteaccount <nickname>
+    description: Delete your account.
+    permission: testimoni.commands.deleteaccount
+
+permissions:
+  testimony.commands.register:
+    description: Allow registering a new account.
+    default: true
+
+  testimony.commands.login:
+    description: Allow login.
+    default: true
+
+  testimony.commands.changepassword:
+    description: Allow change account password.
+    default: true
+
+  testimony.commands.deleteaccount:
+    description: Allow delete your account.
+    default: true

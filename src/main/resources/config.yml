@@ -1,0 +1,17 @@
+captcha:
+  enabled: true
+
+registration:
+  timeout: 60
+  request_interval: 10
+  password_length:
+    min: 3
+    max: 16
+
+authorization:
+  timeout: 60
+  request_interval: 10
+
+session:
+  enabled: true
+  timeout: 1200

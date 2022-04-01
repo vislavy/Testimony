@@ -1,0 +1,32 @@
+prefix: "&l&6[!] &r"
+
+welcome_message:
+  title: "&eHello, &6{0}&e!"
+  subtitle: "Welcome to the BadCubes server"
+
+captcha:
+  title: "Captcha: choose a number {0}"
+  captcha_not_passed: "&cYou didn't pass the captcha!"
+
+timer_bar:
+  registration: "Registration"
+  authorization: "Authorization"
+  timeout: "Timeout"
+
+registration:
+  request: "You need to register! Come up with a password and just write it to the chat."
+  success: "&aYou have successfully registered!"
+  wrong_password_length: "&eYour password is too short or too long."
+  wrong_command: "&eYou cannot use commands until you register."
+  timeout: "&cYou haven't registered yet!"
+
+authorization:
+  request: "You need to login! Just write your password in the chat."
+  success: "&aYou have successfully logged in!"
+  wrong_command: "&eYou cannot use commands until you login."
+  wrong_password: "&cYou entered the wrong password!"
+  timeout: "&cYou haven't login yet!"
+
+session:
+  valid: "&aYour session is active."
+  invalid: "&eYour session is no longer active."
