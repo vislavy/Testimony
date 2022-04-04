@@ -12,7 +12,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 @Suppress("UNUSED")
 class MenuListener : Listener {
 
-    private val locale = plugin.locale
+    private val locale = plugin.localeConfig.config
 
     @EventHandler
     fun onItemClick(event: InventoryClickEvent) {
@@ -28,9 +28,7 @@ class MenuListener : Listener {
     @EventHandler
     fun onClose(event: InventoryCloseEvent) {
         val inventoryHolder = event.inventory.holder
-        if (inventoryHolder is CaptchaMenu) {
-            if (inventoryHolder.isPassed) return
-
+        if (inventoryHolder is CaptchaMenu && !inventoryHolder.isPassed) {
             val player = event.player as Player
             player.kickPlayer(locale.prefix + locale.captcha.captchaNotPassed)
         }

@@ -6,41 +6,22 @@ version: 1.0-SNAPSHOT
 api-version: 1.18
 
 commands:
-  register:
-    aliases: [ r, reg ]
-    usage: /reg <password>
-    description: Registering a new account.
-    permission: testimony.commands.register
-
-  login:
-    aliases: [ l ]
-    usage: /l <password>
-    description: Login.
-    permission: testimony.commands.login
-
-  changepassword:
-    usage: /changepassword <old password> <new password>
-    description: Change account password.
-    permission: testimony.commands.changepassword
-
-  deleteaccount:
-    usage: /deleteaccount <nickname>
-    description: Delete your account.
-    permission: testimoni.commands.deleteaccount
+  testimony:
+    description: "Main plugin command"
+    usage: "/testimony [reload/delaccount]"
 
 permissions:
-  testimony.commands.register:
-    description: Allow registering a new account.
-    default: true
+  testimony.command.*:
+    description: "Access to all Testimony commands."
+    default: op
+    children:
+      testimony.command.reload: true
+      testimony.command.delaccount: true
 
-  testimony.commands.login:
-    description: Allow login.
-    default: true
+  testimony.command.reload:
+    description: "Access to /testimony reload."
+    default: op
 
-  testimony.commands.changepassword:
-    description: Allow change account password.
-    default: true
-
-  testimony.commands.deleteaccount:
-    description: Allow delete your account.
-    default: true
+  testimony.command.delaccount:
+    description: "Access to /testimony delaccount."
+    default: op

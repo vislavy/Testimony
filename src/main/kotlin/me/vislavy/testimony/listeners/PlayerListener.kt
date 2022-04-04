@@ -1,10 +1,9 @@
 package me.vislavy.testimony.listeners
 
-import me.vislavy.testimony.local.database.Database
 import me.vislavy.testimony.plugin
-import me.vislavy.testimony.menu_system.menu.CaptchaMenu
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
@@ -13,20 +12,14 @@ import org.bukkit.event.player.*
 @Suppress("UNUSED")
 class PlayerListener : Listener {
 
-    private val config = plugin.config
-    private val locale = plugin.locale
+    private val config = plugin.pluginConfig.config
+    private val locale = plugin.localeConfig.config
 
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         val player = event.player
-        val isAccountExists = Database.getAccount(player.name) != null
 
-        if (plugin.config.captcha.enabled && !isAccountExists) {
-            CaptchaMenu(player).open()
-            return
-        }
-
-        if (config.session.enabled && isAccountExists) {
+        if (config.session.enabled && plugin.isAccountExists(player.name)) {
             if (plugin.checkSession(player)) {
                 player.sendMessage(locale.prefix + locale.session.valid)
                 return
@@ -35,19 +28,27 @@ class PlayerListener : Listener {
             player.sendMessage(locale.prefix + locale.session.invalid)
         }
 
-        plugin.startAuthenticationProcess(player)
+        plugin.startAuthorizationProcess(player)
     }
 
     @EventHandler
-    fun onMessage(event: AsyncPlayerChatEvent) {
+    fun onQuit(event: PlayerQuitEvent) {
+        val player = event.player
+        if (plugin.isUnauthorized(player)) {
+            plugin.stopAuthorizationProcess(player)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    fun onPasswordEntry(event: AsyncPlayerChatEvent) {
         val player = event.player
         if (!plugin.isUnauthorized(player)) return
+
         event.isCancelled = true
+        val password = event.message.trim()
 
-        val message = event.message
-
-        Database.getAccount(player.name)?.apply {
-            if (!plugin.tryAuth(player, message)) {
+        if (plugin.isAccountExists(player.name)) {
+            if (!plugin.tryAuth(player, password)) {
                 player.sendMessage(locale.prefix + locale.authorization.wrongPassword)
                 return
             }
@@ -57,14 +58,22 @@ class PlayerListener : Listener {
             return
         }
 
-        if (message.length < config.registration.passwordLength.min || message.length > config.registration.passwordLength.max) {
+        if (password.length < config.registration.passwordLength.min || password.length > config.registration.passwordLength.max) {
             player.sendMessage(locale.prefix + locale.registration.wrongPasswordLength)
             return
         }
 
-        plugin.register(player, message)
         plugin.stopAuthorizationProcess(player)
-        player.sendMessage(locale.prefix + locale.registration.success)
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    fun onCasualPasswordEntry(event: AsyncPlayerChatEvent) {
+        val player = event.player
+        val password = event.message.trim()
+        if (plugin.tryAuth(player, password)) {
+            event.isCancelled = true
+            player.sendMessage(locale.prefix + locale.other.casualPasswordEntry)
+        }
     }
 
     @EventHandler
@@ -72,12 +81,10 @@ class PlayerListener : Listener {
         val player = event.player
         if (plugin.isUnauthorized(player)) {
             event.isCancelled = true
-            Database.getAccount(player.name)?.apply {
-                player.sendMessage(locale.prefix + locale.authorization.wrongCommand)
-                return
+            when (plugin.isAccountExists(player.name)) {
+                true -> player.sendMessage(locale.prefix + locale.authorization.wrongCommand)
+                else -> player.sendMessage(locale.prefix + locale.registration.wrongCommand)
             }
-
-            player.sendMessage(locale.prefix + locale.registration.wrongCommand)
         }
     }
 

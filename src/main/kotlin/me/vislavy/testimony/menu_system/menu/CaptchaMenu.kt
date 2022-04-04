@@ -9,13 +9,16 @@ import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 
-class CaptchaMenu(private val player: Player) : Menu(player) {
+class CaptchaMenu(
+    private val player: Player,
+    private val password: String
+) : Menu(player) {
 
     var isPassed = false
         private set
 
     private val desiredVariant = getRandomItem()
-    private val locale = plugin.locale
+    private val locale = plugin.localeConfig.config
 
     override fun getTitle() = StringFormatter.format(locale.captcha.title, desiredVariant.amount)
 
@@ -45,14 +48,15 @@ class CaptchaMenu(private val player: Player) : Menu(player) {
             player.playSound(player, Sound.ENTITY_VILLAGER_CELEBRATE, 1F, 1F)
             event.whoClicked.closeInventory()
 
-            plugin.startAuthenticationProcess(player)
+            plugin.register(player, password)
+            plugin.stopAuthorizationProcess(player)
             return
         }
 
-        player.kickPlayer(locale.prefix + locale.captcha.captchaNotPassed)
+        event.whoClicked.closeInventory()
     }
 
-    private fun getRandomItem(elimination: List<Int> = emptyList()) : ItemStack {
+    private fun getRandomItem(elimination: List<Int> = emptyList()): ItemStack {
         val randomRange = (1..64).toMutableList()
         randomRange.removeAll(elimination)
         val randomValue = randomRange.random()

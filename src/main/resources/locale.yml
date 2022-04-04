@@ -27,6 +27,17 @@ authorization:
   wrong_password: "&cYou entered the wrong password!"
   timeout: "&cYou haven't login yet!"
 
+delaccount:
+  usage: "Usage: /testimony delaccount <nickname>"
+  success: "&aYou have successfully deleted account!"
+  account_not_exists: "&ePlayer account {0} not found."
+
 session:
   valid: "&aYour session is active."
   invalid: "&eYour session is no longer active."
+
+other:
+  access_denied: "&eYou don't have enough rights."
+  only_console: "&eYou can only do this through the console."
+  reload: "&aConfiguration has been reloaded!"
+  casual_password_entry: "&cYou almost revealed your password, but we saved you :)"

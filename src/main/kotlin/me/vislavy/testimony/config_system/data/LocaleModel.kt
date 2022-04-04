@@ -13,7 +13,9 @@ data class LocaleModel(
     val timerBar: TimerBarLocale,
     val registration: RegistrationLocale,
     val authorization: AuthorizationLocale,
-    val session: SessionLocale
+    val session: SessionLocale,
+    val delaccount: DelaccountLocale,
+    val other: OtherLocale
 )
 
 @Serializable
@@ -62,4 +64,23 @@ data class AuthorizationLocale(
 data class SessionLocale(
     val valid: String,
     val invalid: String
+)
+
+@Serializable
+data class DelaccountLocale(
+    val usage: String,
+    val success: String,
+    @SerialName("account_not_exists")
+    val accountNotExists: String
+)
+
+@Serializable
+data class OtherLocale(
+    @SerialName("access_denied")
+    val accessDenied: String,
+    @SerialName("only_console")
+    val onlyConsole: String,
+    val reload: String,
+    @SerialName("casual_password_entry")
+    val casualPasswordEntry: String
 )

@@ -21,8 +21,8 @@ class AuthenticationTimer(private val player: Player) {
     private var particlesJob: Job? = null
     private var bar: BossBar? = null
 
-    private val config = plugin.config
-    private val locale = plugin.locale
+    private val config = plugin.pluginConfig.config
+    private val locale = plugin.localeConfig.config
 
     fun startRegistration() {
         timerJob = plugin.launch {

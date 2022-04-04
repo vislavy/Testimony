@@ -2,10 +2,10 @@ package me.vislavy.testimony
 
 import com.github.shynixn.mccoroutine.SuspendingJavaPlugin
 import com.github.shynixn.mccoroutine.registerSuspendingEvents
+import com.github.shynixn.mccoroutine.setSuspendingExecutor
+import me.vislavy.testimony.commands.TestimonyCommand
 import me.vislavy.testimony.config_system.configs.LocaleConfig
 import me.vislavy.testimony.config_system.configs.PluginConfig
-import me.vislavy.testimony.config_system.data.ConfigModel
-import me.vislavy.testimony.config_system.data.LocaleModel
 import me.vislavy.testimony.listeners.MenuListener
 import me.vislavy.testimony.listeners.PlayerListener
 import me.vislavy.testimony.local.data.Account
@@ -21,10 +21,9 @@ val plugin = JavaPlugin.getPlugin(Testimony::class.java)
 
 class Testimony : SuspendingJavaPlugin() {
 
-    lateinit var config: ConfigModel
+    lateinit var pluginConfig: PluginConfig
         private set
-
-    lateinit var locale: LocaleModel
+    lateinit var localeConfig: LocaleConfig
         private set
 
     private val unauthorizedPlayers = mutableListOf<Player>()
@@ -35,6 +34,7 @@ class Testimony : SuspendingJavaPlugin() {
 
         registerConfigs()
         registerListeners()
+        registerCommands()
 
         Database.openConnection()
 
@@ -53,24 +53,19 @@ class Testimony : SuspendingJavaPlugin() {
 
         val currentDate = Date()
         val timeDifferentInSeconds = (currentDate.time - account.lastSeen) / 1000
-        if (timeDifferentInSeconds >= config.session.timeout) return false
-
-        return true
+        return timeDifferentInSeconds <= pluginConfig.config.session.timeout
     }
 
-    fun startAuthenticationProcess(player: Player) {
+    fun startAuthorizationProcess(player: Player) {
         val timer = AuthenticationTimer(player)
         timers[player.name] = timer
 
         unauthorizedPlayers.add(player)
 
-        val account = Database.getAccount(player.name)
-        if (account == null) {
-            timer.startRegistration()
-            return
+        when (isAccountExists(player.name)) {
+            true -> timer.startAuthorization()
+            false -> timer.startRegistration()
         }
-
-        timer.startAuthorization()
     }
 
     fun stopAuthorizationProcess(player: Player) {
@@ -82,6 +77,8 @@ class Testimony : SuspendingJavaPlugin() {
     }
 
     fun isUnauthorized(player: Player) = unauthorizedPlayers.contains(player)
+
+    fun isAccountExists(nickname: String) = Database.getAccount(nickname) != null
 
     fun register(player: Player, password: String) {
         val seed = PasswordEncrypter.generateSeed()
@@ -106,14 +103,21 @@ class Testimony : SuspendingJavaPlugin() {
         return true
     }
 
-    private fun registerConfigs() {
-        val pluginConfig = PluginConfig()
-        pluginConfig.refresh()
-        config = pluginConfig.config
+    fun delaccount(nickname: String): Boolean {
+        if (isAccountExists(nickname))  {
+            Database.deleteAccount(nickname)
+            return true
+        }
 
-        val localeConfig = LocaleConfig()
+        return false
+    }
+
+    private fun registerConfigs() {
+        pluginConfig = PluginConfig()
+        pluginConfig.refresh()
+
+        localeConfig = LocaleConfig()
         localeConfig.refresh()
-        locale = localeConfig.config
     }
 
     private fun registerListeners() {
@@ -125,8 +129,8 @@ class Testimony : SuspendingJavaPlugin() {
 
     private fun showWelcomeMessage(player: Player) {
         player.sendTitle(
-            StringFormatter.format(locale.welcomeMessage.title, player.name),
-            locale.welcomeMessage.subtitle,
+            StringFormatter.format(localeConfig.config.welcomeMessage.title, player.name),
+            localeConfig.config.welcomeMessage.subtitle,
             10,
             60,
             10
@@ -134,10 +138,9 @@ class Testimony : SuspendingJavaPlugin() {
         player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)
     }
 
-//    private fun registerCommands() {
-//        getCommand("register")?.setSuspendingExecutor(RegisterCommand())
-//        getCommand("login")?.setSuspendingExecutor(LoginCommand())
-//    }
+    private fun registerCommands() {
+        getCommand("testimony")?.setSuspendingExecutor(TestimonyCommand())
+    }
 
     companion object {
         private val logo = """
@@ -148,8 +151,6 @@ class Testimony : SuspendingJavaPlugin() {
         ░░░██║░░░██╔══╝░░░╚═══██╗░░░██║░░░██║██║╚██╔╝██║██║░░██║██║╚████║░░╚██╔╝░░
         ░░░██║░░░███████╗██████╔╝░░░██║░░░██║██║░╚═╝░██║╚█████╔╝██║░╚███║░░░██║░░░
         ░░░╚═╝░░░╚══════╝╚═════╝░░░░╚═╝░░░╚═╝╚═╝░░░░░╚═╝░╚════╝░╚═╝░░╚══╝░░░╚═╝░░░
-                                        ▄█░░░░░█▀█
-                                        ░█░░▄░░█▄█
     """.trimIndent()
     }
 }
